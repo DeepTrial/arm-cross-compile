@@ -5,6 +5,8 @@
 
 Simple tool for building ARM cross-compilation Docker environments with automatic mirror selection.
 
+> **Quick Install**: `./build.sh install debian13-a720ae`
+
 ## Features
 
 - **Version-Based Configuration**: Specify GCC, glibc, binutils, gdb versions in YAML
