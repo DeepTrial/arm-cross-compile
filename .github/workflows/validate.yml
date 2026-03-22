@@ -1,0 +1,113 @@
+name: Validate Configs
+
+on:
+  push:
+    paths:
+      - 'configs/**'
+      - 'templates/**'
+  pull_request:
+    paths:
+      - 'configs/**'
+      - 'templates/**'
+
+jobs:
+  validate-yaml:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: pip install pyyaml
+    
+    - name: Validate config files
+      run: |
+        python << 'EOF'
+        import yaml
+        import sys
+        from pathlib import Path
+        
+        configs_dir = Path('configs')
+        errors = []
+        
+        for config_file in configs_dir.glob('*.yaml'):
+            try:
+                with open(config_file) as f:
+                    config = yaml.safe_load(f)
+                
+                # Check required fields
+                required = ['name', 'base_image', 'architecture']
+                for field in required:
+                    if field not in config:
+                        errors.append(f"{config_file}: missing required field '{field}'")
+                
+                # Validate architecture
+                if 'architecture' in config:
+                    valid_archs = ['arm64', 'armhf', 'aarch64', 'armv7']
+                    if config['architecture'] not in valid_archs:
+                        errors.append(f"{config_file}: invalid architecture '{config['architecture']}'")
+                
+                print(f"✓ {config_file}")
+                
+            except yaml.YAMLError as e:
+                errors.append(f"{config_file}: YAML parse error - {e}")
+            except Exception as e:
+                errors.append(f"{config_file}: Error - {e}")
+        
+        if errors:
+            print("\nErrors found:")
+            for error in errors:
+                print(f"  ✗ {error}")
+            sys.exit(1)
+        else:
+            print(f"\n✓ All {len(list(configs_dir.glob('*.yaml')))} config files are valid")
+        EOF
+    
+    - name: Validate manifest.yaml
+      run: |
+        python << 'EOF'
+        import yaml
+        import sys
+        
+        try:
+            with open('images/manifest.yaml') as f:
+                manifest = yaml.safe_load(f)
+            
+            # Check required structure
+            if 'images' not in manifest:
+                print("✗ manifest.yaml: missing 'images' key")
+                sys.exit(1)
+            
+            # Validate each image entry
+            errors = []
+            for name, info in manifest['images'].items():
+                required = ['name', 'arch', 'file', 'checksum']
+                for field in required:
+                    if field not in info:
+                        errors.append(f"{name}: missing field '{field}'")
+            
+            if errors:
+                print("Errors in manifest.yaml:")
+                for error in errors:
+                    print(f"  ✗ {error}")
+                sys.exit(1)
+            
+            print(f"✓ manifest.yaml is valid ({len(manifest['images'])} images)")
+            
+        except Exception as e:
+            print(f"✗ manifest.yaml: {e}")
+            sys.exit(1)
+        EOF
+    
+    - name: Test Dockerfile generation
+      run: |
+        pip install pyyaml
+        for config in configs/*.yaml; do
+          echo "Testing: $config"
+          python cross-toolchain.py generate "$config" -o /tmp/test.dockerfile || exit 1
+        done
+        echo "✓ All configs generate valid Dockerfiles"

@@ -1,5 +1,8 @@
 # ARM Cross-Compilation Environment
 
+[![Build and Test](https://github.com/DeepTrial/ARM-Cross-Compile/actions/workflows/build.yml/badge.svg)](https://github.com/DeepTrial/ARM-Cross-Compile/actions/workflows/build.yml)
+[![Validate Configs](https://github.com/DeepTrial/ARM-Cross-Compile/actions/workflows/validate.yml/badge.svg)](https://github.com/DeepTrial/ARM-Cross-Compile/actions/workflows/validate.yml)
+
 Simple tool for building ARM cross-compilation Docker environments with automatic mirror selection.
 
 ## Features
