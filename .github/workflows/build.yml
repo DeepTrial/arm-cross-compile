@@ -64,6 +64,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: generate-dockerfile
     if: github.event_name == 'push' && contains(github.ref, 'main')
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
     steps:
     - uses: actions/checkout@v4
     
@@ -78,25 +84,37 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
     
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
     - name: Build image
       run: |
-        python cross-toolchain.py build configs/default.yaml -t arm-cross:test
+        python cross-toolchain.py build configs/default.yaml -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
     
     - name: Test cross-compilation
       run: |
         echo '#include <stdio.h>' > /tmp/test.c
         echo 'int main() { printf("Hello ARM64!\n"); return 0; }' >> /tmp/test.c
-        docker run --rm -v /tmp:/workspace arm-cross:test \
+        docker run --rm -v /tmp:/workspace ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
           /bin/bash -c 'aarch64-linux-gnu-gcc -o /workspace/test /workspace/test.c && file /workspace/test'
     
-    - name: Export image
+    - name: Push image to GHCR
       run: |
-        docker save arm-cross:test | gzip > /tmp/arm-cross-test.tar.gz
-        ls -lh /tmp/arm-cross-test.tar.gz
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        echo "✓ Image pushed to ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+    
+    - name: Export image for artifact
+      run: |
+        docker save ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest | gzip > /tmp/arm-cross-latest.tar.gz
+        ls -lh /tmp/arm-cross-latest.tar.gz
     
     - name: Upload image artifact
       uses: actions/upload-artifact@v4
       with:
         name: arm-cross-image
-        path: /tmp/arm-cross-test.tar.gz
+        path: /tmp/arm-cross-latest.tar.gz
         retention-days: 7
