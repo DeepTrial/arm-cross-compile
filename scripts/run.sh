@@ -1,5 +1,5 @@
 #!/bin/bash
-# 运行指定架构的交叉编译容器
+# Run cross-compilation container for specified architecture
 
 set -e
 
@@ -7,15 +7,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 show_help() {
-    echo "用法: $0 <架构> [工作目录]"
+    echo "Usage: $0 <architecture> [workspace]"
     echo ""
-    echo "参数:"
-    echo "  架构       - aarch64, armhf, armel, armv7"
-    echo "  工作目录   - 挂载到容器的目录 (默认: 当前目录)"
+    echo "Parameters:"
+    echo "  architecture  - aarch64, armhf, armel, armv7"
+    echo "  workspace     - Directory to mount in container (default: current directory)"
     echo ""
-    echo "示例:"
-    echo "  $0 aarch64           # 运行 aarch64 容器，挂载当前目录"
-    echo "  $0 armhf /my/project # 运行 armhf 容器，挂载 /my/project"
+    echo "Examples:"
+    echo "  $0 aarch64           # Run aarch64 container with current directory mounted"
+    echo "  $0 armhf /my/project # Run armhf container with /my/project mounted"
 }
 
 if [ $# -lt 1 ]; then
@@ -29,18 +29,18 @@ WORKSPACE=$(cd "$WORKSPACE" && pwd)
 
 IMAGE_TAG="arm-cross:${ARCH}"
 
-# 检查镜像是否存在
+# Check if image exists
 if ! docker image inspect "$IMAGE_TAG" &> /dev/null; then
-    echo "错误: 镜像 $IMAGE_TAG 不存在"
-    echo "请先运行: ./scripts/build.sh $ARCH"
+    echo "Error: Image $IMAGE_TAG does not exist"
+    echo "Please run first: ./scripts/build.sh $ARCH"
     exit 1
 fi
 
-echo "启动容器: $IMAGE_TAG"
-echo "工作目录: $WORKSPACE"
+echo "Starting container: $IMAGE_TAG"
+echo "Workspace: $WORKSPACE"
 echo ""
 
-# 运行容器
+# Run container
 docker run -it --rm \
     -v "$WORKSPACE:/workspace" \
     -w /workspace \

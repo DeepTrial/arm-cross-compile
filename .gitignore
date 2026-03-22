@@ -1,4 +1,4 @@
-# 编译生成的文件
+# Build artifacts
 *.o
 *.a
 *.so
@@ -6,16 +6,16 @@
 *.bin
 *.img
 
-# 下载的工具链（可通过脚本重新下载）
+# Downloaded toolchains (can be re-downloaded via scripts)
 toolchains/
 downloads/
 
-# 构建输出
+# Build output
 build/
 out/
 dist/
 
-# Docker相关
+# Docker related
 docker-build/
 .cache/
 
@@ -26,12 +26,12 @@ docker-build/
 *.swo
 *~
 
-# 临时文件
+# Temporary files
 *.log
 *.tmp
 .DS_Store
 Thumbs.db
 
-# 环境变量文件（可能包含敏感信息）
+# Environment files (may contain sensitive information)
 .env
 .env.local

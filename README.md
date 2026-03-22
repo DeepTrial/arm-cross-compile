@@ -1,53 +1,53 @@
-# ARM 交叉编译环境仓库
+# ARM Cross-Compilation Environment Repository
 
-本仓库用于管理各种 ARM 架构的交叉编译环境 Docker 镜像。
+This repository manages Docker images for various ARM architecture cross-compilation environments.
 
-## 支持的架构
+## Supported Architectures
 
-| 架构 | 目录 | 说明 |
-|------|------|------|
+| Architecture | Directory | Description |
+|-------------|-----------|-------------|
 | aarch64 | `dockerfiles/aarch64/` | ARM64 / ARMv8-A |
 | armhf | `dockerfiles/armhf/` | ARM hard-float (ARMv7+) |
 | armel | `dockerfiles/armel/` | ARM soft-float |
-| armv7 | `dockerfiles/armv7/` | ARMv7 专用 |
+| armv7 | `dockerfiles/armv7/` | ARMv7 specific |
 
-## 目录结构
+## Directory Structure
 
 ```
 .
-├── dockerfiles/       # 各架构的 Dockerfile
+├── dockerfiles/       # Dockerfiles for each architecture
 │   ├── aarch64/
 │   ├── armhf/
 │   ├── armel/
 │   └── armv7/
-├── scripts/           # 构建和辅助脚本
-├── configs/           # 配置文件
-├── examples/          # 示例项目
-└── docs/              # 文档
+├── scripts/           # Build and utility scripts
+├── configs/           # Configuration files
+├── examples/          # Example projects
+└── docs/              # Documentation
 ```
 
-## 快速开始
+## Quick Start
 
-### 构建镜像
+### Build Image
 
 ```bash
-# 构建 aarch64 交叉编译环境
+# Build aarch64 cross-compilation environment
 cd dockerfiles/aarch64
 docker build -t arm-cross:aarch64 .
 
-# 或使用脚本
+# Or use the script
 ./scripts/build.sh aarch64
 ```
 
-### 使用镜像
+### Run Container
 
 ```bash
-# 运行容器
+# Run container
 docker run -it --rm -v $(pwd):/workspace arm-cross:aarch64
 ```
 
-## 贡献指南
+## Contributing Guidelines
 
-1. 每个新架构请在 `dockerfiles/` 下创建独立目录
-2. Dockerfile 应包含清晰的注释说明
-3. 添加相应的构建脚本到 `scripts/` 目录
+1. Create a dedicated directory under `dockerfiles/` for each new architecture
+2. Dockerfiles should include clear comments
+3. Add corresponding build scripts to the `scripts/` directory

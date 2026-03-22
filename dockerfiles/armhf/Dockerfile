@@ -1,5 +1,5 @@
-# ARM hard-float (armhf) 交叉编译环境
-# 基于 Ubuntu 22.04 LTS
+# ARM hard-float (armhf) Cross-Compilation Environment
+# Based on Ubuntu 22.04 LTS
 FROM ubuntu:22.04
 
 LABEL maintainer="your-email@example.com"
@@ -7,7 +7,7 @@ LABEL description="ARM HF (ARMv7+) Cross Compilation Environment"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 安装基础工具和依赖
+# Install basic tools and dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
     gdb-multiarch \
     && rm -rf /var/lib/apt/lists/*
 
-# 设置交叉编译环境变量
+# Set cross-compilation environment variables
 ENV CROSS_COMPILE=arm-linux-gnueabihf-
 ENV CC=arm-linux-gnueabihf-gcc
 ENV CXX=arm-linux-gnueabihf-g++

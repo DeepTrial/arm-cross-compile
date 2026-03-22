@@ -1,14 +1,14 @@
-# ARM64 (AArch64) 交叉编译环境
-# 基于 Ubuntu 22.04 LTS
+# ARM64 (AArch64) Cross-Compilation Environment
+# Based on Ubuntu 22.04 LTS
 FROM ubuntu:22.04
 
 LABEL maintainer="your-email@example.com"
 LABEL description="ARM64/AArch64 Cross Compilation Environment"
 
-# 避免交互式配置
+# Avoid interactive configuration
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 安装基础工具和依赖
+# Install basic tools and dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y \
     gdb-multiarch \
     && rm -rf /var/lib/apt/lists/*
 
-# 设置交叉编译环境变量
+# Set cross-compilation environment variables
 ENV CROSS_COMPILE=aarch64-linux-gnu-
 ENV CC=aarch64-linux-gnu-gcc
 ENV CXX=aarch64-linux-gnu-g++
@@ -38,8 +38,8 @@ ENV LD=aarch64-linux-gnu-ld
 ENV RANLIB=aarch64-linux-gnu-ranlib
 ENV STRIP=aarch64-linux-gnu-strip
 
-# 设置工作目录
+# Set working directory
 WORKDIR /workspace
 
-# 默认命令
+# Default command
 CMD ["/bin/bash"]

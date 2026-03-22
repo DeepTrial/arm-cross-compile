@@ -1,47 +1,47 @@
-# ARM 交叉编译环境仓库
+# ARM Cross-Compilation Environment Repository
 
-## 项目概述
+## Project Overview
 
-本仓库用于管理各种 ARM 架构的交叉编译环境 Docker 镜像，便于统一管理和快速部署不同架构的编译环境。
+This repository manages Docker images for various ARM architecture cross-compilation environments, enabling unified management and rapid deployment of compilation environments for different architectures.
 
-## 项目结构
+## Project Structure
 
 ```
 .
-├── dockerfiles/           # 各架构的 Dockerfile
+├── dockerfiles/           # Dockerfiles for each architecture
 │   ├── aarch64/          # ARM64 / ARMv8-A
 │   │   └── Dockerfile
 │   ├── armhf/            # ARM hard-float (ARMv7+)
 │   │   └── Dockerfile
-│   ├── armel/            # ARM soft-float (待添加)
-│   └── armv7/            # ARMv7 专用 (待添加)
-├── scripts/               # 构建和辅助脚本
-│   ├── build.sh          # 构建指定架构镜像
-│   └── run.sh            # 运行指定架构容器
-├── configs/               # 配置文件
-├── examples/              # 示例项目
-├── docs/                  # 文档
-├── .gitignore            # Git 忽略文件
-└── README.md             # 项目说明
+│   ├── armel/            # ARM soft-float (to be added)
+│   └── armv7/            # ARMv7 specific (to be added)
+├── scripts/               # Build and utility scripts
+│   ├── build.sh          # Build image for specified architecture
+│   └── run.sh            # Run container for specified architecture
+├── configs/               # Configuration files
+├── examples/              # Example projects
+├── docs/                  # Documentation
+├── .gitignore            # Git ignore rules
+└── README.md             # Project documentation
 
 ```
 
-## 使用方式
+## Usage
 
-### 构建镜像
+### Build Image
 
 ```bash
-./scripts/build.sh <架构> [标签]
+./scripts/build.sh <architecture> [tag]
 ```
 
-### 运行容器
+### Run Container
 
 ```bash
-./scripts/run.sh <架构> [工作目录]
+./scripts/run.sh <architecture> [workspace]
 ```
 
-## 维护说明
+## Maintenance Notes
 
-1. 添加新架构时，在 `dockerfiles/` 下创建对应目录
-2. 更新脚本时保持兼容性
-3. 测试通过后及时提交
+1. Create corresponding directory under `dockerfiles/` when adding new architectures
+2. Maintain backward compatibility when updating scripts
+3. Commit promptly after testing
