@@ -1,0 +1,30 @@
+# Default ARM64 Cross-Compilation Environment
+# Debian 13.2 (trixie) with GCC 14.2, glibc 2.41, binutils 2.44, gdb 16.3
+# Uses apt packages for fast installation
+
+name: debian13-arm64
+base_image: debian:trixie-slim
+architecture: arm64
+description: |
+  Debian 13.2 ARM64 cross-compilation environment.
+  GCC 14.2, glibc 2.41, binutils 2.44, gdb 16.3.
+  Optimized for Cortex-A720AE.
+
+# Tool versions (apt packages)
+versions:
+  gcc: "14.2"
+  glibc: "2.41"
+  binutils: "2.44"
+  gdb: "16.3"
+  from_source: false  # Use apt (fast)
+
+# CPU optimization
+cpu: cortex-a720
+
+# Additional packages
+packages:
+  base: [build-essential, make, cmake, git, wget, curl, file]
+  qemu: [qemu-user-static, binfmt-support]
+
+env:
+  DEBIAN_FRONTEND: noninteractive

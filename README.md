@@ -1,142 +1,250 @@
-# ARM Cross-Compilation Environment Manager
+# ARM Cross-Compilation Environment
 
-A flexible, configuration-driven tool for managing ARM cross-compilation Docker environments.
+Simple tool for building ARM cross-compilation Docker environments with automatic mirror selection.
 
 ## Features
 
-- **Configuration-Driven**: Define environments via YAML configuration files
-- **Auto-Generation**: Automatically generate Dockerfiles from configurations
-- **Verification**: Built-in verification of generated environments
-- **Flexible**: Support custom toolchains, packages, and build steps
-- **Extensible**: Easy to add new architectures and configurations
+- **Version-Based Configuration**: Specify GCC, glibc, binutils, gdb versions in YAML
+- **Automatic Mirror Selection**: Detects and uses fastest mirrors (DaoCloud, Aliyun, Tsinghua)
+- **Fast Build**: Uses apt packages by default (2-5 minutes)
+- **CPU Optimization**: Optional Cortex-A720AE and other CPU-specific optimizations
 
 ## Quick Start
 
-### 1. List Available Configurations
-
 ```bash
-./scripts/list-configs.sh
-```
-
-### 2. Build from Configuration
-
-```bash
-# Build using predefined configuration
-./scripts/build-from-config.sh configs/aarch64-toolchain.yaml
+# Build default environment (GCC 14.2, glibc 2.41, binutils 2.44, gdb 16.3)
+./build.sh configs/default.yaml
 
 # Build with custom tag
-./scripts/build-from-config.sh configs/aarch64-toolchain.yaml --tag my-image:v1.0
+./build.sh configs/default.yaml my-cross-env:latest
+
+# Use the environment
+docker run -it --rm -v $(pwd):/workspace my-cross-env:latest
+aarch64-linux-gnu-gcc --version  # GCC 14.2.0
 ```
 
-### 3. Run Container
+## Configuration
 
-```bash
-docker run -it --rm -v $(pwd):/workspace arm-cross:aarch64-toolchain
-```
-
-## Directory Structure
-
-```
-.
-├── configs/                   # Environment configuration files (YAML)
-│   ├── aarch64-toolchain.yaml
-│   ├── armhf-toolchain.yaml
-│   └── custom-example.yaml
-├── generator/                 # Dockerfile generator and verifier
-│   ├── generate.py           # Generate Dockerfile from config
-│   └── verify.py             # Verify Dockerfile and image
-├── scripts/                   # Build and utility scripts
-│   ├── build-from-config.sh  # Main build script
-│   ├── list-configs.sh       # List available configs
-│   ├── build.sh              # Legacy script (deprecated)
-│   └── run.sh                # Run container
-├── templates/                 # Configuration templates
-│   └── config-template.yaml  # Template for new configs
-├── dockerfiles/               # Generated Dockerfiles
-│   └── generated/            # Auto-generated from configs
-└── docs/                      # Documentation
-```
-
-## Configuration Format
-
-Create a YAML configuration file:
+Create a YAML config file:
 
 ```yaml
-name: my-custom-env
-base_image: ubuntu:22.04
-architecture: aarch64
-description: My custom ARM environment
+name: my-env
+base_image: debian:trixie-slim
+architecture: arm64
+description: My ARM64 cross-compile environment
 
-toolchain:
-  type: gcc
-  prefix: aarch64-linux-gnu
-  packages:
-    - gcc-aarch64-linux-gnu
-    - g++-aarch64-linux-gnu
+# Version specification
+versions:
+  gcc: "14.2"
+  glibc: "2.41"
+  binutils: "2.44"
+  gdb: "16.3"
+  from_source: false  # Use apt (fast) or build from source (slow)
 
+# CPU optimization (optional)
+cpu: cortex-a720  # Options: cortex-a53, cortex-a72, cortex-a76, cortex-a720, etc.
+
+# Additional packages
 packages:
-  base:
-    - build-essential
-    - cmake
-    - git
-  dev:
-    - python3
-    - gdb-multiarch
+  base: [build-essential, make, cmake, git]
+  qemu: [qemu-user-static]
 
 env:
   DEBIAN_FRONTEND: noninteractive
-  MY_VAR: my_value
-
-custom_steps:
-  - echo "Setup complete!"
 ```
 
-## Commands
+## Available Configs
 
-### Generate Only
+| Config | Description | Build Time |
+|--------|-------------|------------|
+| `configs/default.yaml` | GCC 14.2, optimized for Cortex-A720AE | ~3 minutes |
+| `configs/from-source.yaml` | Build toolchain from source | ~60 minutes |
+
+## Project Structure
+
+```
+.
+├── build.sh                 # Main entry script
+├── cross-toolchain.py       # Unified tool: generate, build, export, import
+├── configs/                 # Configuration files
+│   ├── default.yaml         # Default configuration
+│   └── from-source.yaml     # Source build example
+├── images/                  # Prebuilt images repository
+│   ├── manifest.yaml        # Image registry
+│   ├── arm64/              # ARM64 images
+│   └── armhf/              # ARMHF images
+├── templates/               # Configuration templates
+│   └── config-template.yaml
+├── exports/                 # Temporary exports (created on demand)
+└── README.md
+```
+
+## Usage Examples
+
+### Compile for ARM64
 
 ```bash
-python3 generator/generate.py configs/aarch64-toolchain.yaml -o output/Dockerfile
+# Start container
+docker run -it --rm -v $(pwd):/workspace debian13-arm64:latest
+
+# Compile C code
+aarch64-linux-gnu-gcc -o hello hello.c
+
+# Compile with CPU optimization (Cortex-A720AE)
+aarch64-linux-gnu-gcc ${CFLAGS} -o hello hello.c
+
+# Check binary
+file hello
+# Output: ELF 64-bit LSB executable, ARM aarch64, ...
 ```
 
-### Validate Configuration
+### Custom Versions
+
+Edit `configs/default.yaml`:
+
+```yaml
+versions:
+  gcc: "13.2"      # Change GCC version
+  cpu: cortex-a76  # Change target CPU
+```
+
+Then rebuild:
+```bash
+./build.sh configs/default.yaml
+```
+
+## Export/Import Images
+
+Export image for offline transfer to other machines:
 
 ```bash
-./scripts/build-from-config.sh configs/aarch64-toolchain.yaml --validate-only
+# Export to ./exports/ directory (default)
+./build.sh export debian13-arm64:latest
+
+# Export to custom directory
+./build.sh export debian13-arm64:latest /path/to/exports
+
+# Or use Python tool directly
+./cross-toolchain.py export debian13-arm64:latest -o ./exports
 ```
 
-### Build Without Verification
+Import on another machine:
 
 ```bash
-./scripts/build-from-config.sh configs/aarch64-toolchain.yaml --no-verify
+# Using build.sh wrapper
+./build.sh import ./exports/debian13-arm64-latest.tar.gz
+
+# Or using Python tool directly
+./cross-toolchain.py import ./exports/debian13-arm64-latest.tar.gz
+
+# Or using docker directly
+docker load -i debian13-arm64-latest.tar.gz
 ```
 
-### Verify Existing Dockerfile
+Transfer to remote machine:
 
 ```bash
-python3 generator/verify.py dockerfiles/generated/aarch64-toolchain/Dockerfile \
-    --build -t arm-cross:aarch64-toolchain -p aarch64-linux-gnu
+# 1. Export locally
+./build.sh export debian13-arm64:latest
+
+# 2. Copy to remote
+scp ./exports/debian13-arm64-latest.tar.gz user@remote:/path/
+
+# 3. Import on remote
+ssh user@remote 'cd /path && ./build.sh import debian13-arm64-latest.tar.gz'
 ```
 
-## Creating Custom Configurations
+## Prebuilt Images Repository
 
-1. Copy the template:
-   ```bash
-   cp templates/config-template.yaml configs/my-env.yaml
-   ```
+Manage and share prebuilt images using the `images/` directory:
 
-2. Edit the configuration file
+### List Available Images
 
-3. Build:
-   ```bash
-   ./scripts/build-from-config.sh configs/my-env.yaml
-   ```
+```bash
+./build.sh images
+# or filter by architecture
+./build.sh images --arch arm64
+```
+
+Output:
+```
+================================================================================
+Name                 Arch     Size       CPU             Description
+================================================================================
+debian13-a720ae      arm64    ~389MB     cortex-a720     Debian 13.2 + GCC 14...
+debian13-arm64       arm64    ~400MB     generic         Debian 13.2 + GCC 14...
+================================================================================
+```
+
+### Install Prebuilt Image
+
+```bash
+# Quick install from repository
+./build.sh install debian13-a720ae
+
+# Or using Python directly
+./cross-toolchain.py install debian13-a720ae
+```
+
+### Publish Image to Repository
+
+After building a custom image, add it to the prebuilt repository:
+
+```bash
+# Publish with metadata
+./build.sh publish debian13-a720ae:latest \
+    --name debian13-a720ae \
+    --arch arm64 \
+    --cpu cortex-a720 \
+    --gcc "14.2" \
+    --glibc "2.41" \
+    --description "Debian 13.2 + GCC 14.2 + Cortex-A720AE"
+
+# Or using Python directly
+./cross-toolchain.py publish debian13-a720ae:latest \
+    --name debian13-a720ae \
+    --arch arm64 \
+    --gcc "14.2"
+```
+
+The image will be:
+1. Exported from Docker
+2. Compressed and stored in `images/arm64/`
+3. Registered in `images/manifest.yaml` with checksum
+
+### Share Repository
+
+The `images/` folder can be:
+- Shared via git (with git-lfs for large files)
+- Uploaded to a file server (update `base_url` in `manifest.yaml`)
+- Distributed via USB drive
+
+```bash
+# Archive the entire repository
+tar czvf arm-images.tar.gz images/
+
+# Extract on another machine
+tar xzvf arm-images.tar.gz
+./build.sh images
+```
+
+## Mirror Selection
+
+The tool automatically detects and uses the best available mirrors:
+
+- **Docker Hub**: docker.m.daocloud.io, docker.1panel.live
+- **APT**: mirrors.aliyun.com, mirrors.tuna.tsinghua.edu.cn
+
+To disable auto-mirror and use defaults:
+```bash
+./cross-toolchain.py build config.yaml --auto-mirror
+```
 
 ## Requirements
 
 - Docker
-- Python 3.6+
-- PyYAML (`pip3 install pyyaml`)
+- Python 3 + PyYAML
+- Internet connection
 
 ## License
 

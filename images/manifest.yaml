@@ -1,0 +1,52 @@
+repository:
+  name: arm-cross-compiler
+  description: ARM Cross-Compilation Docker Images
+  base_url: https://your-repo.example.com/images
+images:
+  debian13-a720ae:
+    name: debian13-a720ae
+    tag: latest
+    arch: arm64
+    description: Debian 13.2 + GCC 14.2 + Cortex-A720AE optimized
+    size: ~389MB
+    versions:
+      gcc: '14.2.0'
+      glibc: '2.41'
+      binutils: '2.44'
+      gdb: '16.3'
+      debian: '13.2'
+    cpu: cortex-a720
+    file: arm64/debian13-a720ae-latest.tar.gz
+    checksum: sha256:429f0f31cdd7cd1f2f81716b532c1f2ad52667f03533f055b217ba2b4f509443
+    created: '2026-03-22'
+    source: exports/debian13-a720ae-latest.tar.gz  # Migrated from exports
+  debian13-arm64:
+    name: debian13-arm64
+    tag: latest
+    arch: arm64
+    description: Debian 13.2 + GCC 14.2 (generic ARM64)
+    size: ~400MB
+    versions:
+      gcc: '14.2'
+      glibc: '2.41'
+      binutils: '2.44'
+      gdb: '16.3'
+    cpu: generic
+    file: arm64/debian13-arm64-latest.tar.gz
+    checksum: sha256:placeholder
+    created: '2024-03-22'
+  ubuntu2204-arm64:
+    name: ubuntu2204-arm64
+    tag: latest
+    arch: arm64
+    description: Ubuntu 22.04 + GCC 11/12
+    size: ~450MB
+    versions:
+      gcc: '11.4'
+      glibc: '2.35'
+      binutils: '2.38'
+      gdb: '12.1'
+    cpu: generic
+    file: arm64/ubuntu2204-arm64-latest.tar.gz
+    checksum: sha256:placeholder
+    created: '2024-03-22'

@@ -1,3 +1,17 @@
+# Generated Dockerfiles (can be regenerated from configs)
+dockerfiles/
+
+# Temporary exports directory
+exports/
+
+# Prebuilt images (use git-lfs for these)
+images/**/*.tar.gz
+images/**/*.tar
+
+# Keep manifest and README
+!images/manifest.yaml
+!images/**/README.md
+
 # Build artifacts
 *.o
 *.a
@@ -6,26 +20,10 @@
 *.bin
 *.img
 
-# Generated Dockerfiles (can be regenerated from configs)
-dockerfiles/generated/
-
 # Python cache
 __pycache__/
 *.pyc
 *.pyo
-
-# Downloaded toolchains (can be re-downloaded via scripts)
-toolchains/
-downloads/
-
-# Build output
-build/
-out/
-dist/
-
-# Docker related
-docker-build/
-.cache/
 
 # IDE
 .vscode/
@@ -39,7 +37,3 @@ docker-build/
 *.tmp
 .DS_Store
 Thumbs.db
-
-# Environment files (may contain sensitive information)
-.env
-.env.local
