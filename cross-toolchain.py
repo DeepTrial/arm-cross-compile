@@ -117,8 +117,11 @@ class DockerfileGenerator:
         if cpu and cpu != 'generic':
             cflags = f"-mcpu={cpu} -march=armv8.2-a -O2"
         
-        lines = [
-            f"# {cfg.get('description', 'ARM Cross-Compilation Environment')}",
+        # Handle multi-line description
+        description = cfg.get('description', 'ARM Cross-Compilation Environment')
+        desc_lines = [f"# {line}" for line in description.strip().split('\n')]
+        
+        lines = desc_lines + [
             f"FROM {base}",
             "",
             f"LABEL name=\"{cfg['name']}\"",
