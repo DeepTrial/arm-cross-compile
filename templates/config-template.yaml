@@ -1,0 +1,79 @@
+# ARM Cross-Compilation Environment Configuration Template
+# Copy this file and modify for your specific requirements
+
+# Unique name for this environment configuration
+name: my-custom-env
+
+# Base Docker image
+base_image: ubuntu:22.04
+
+# Target architecture (aarch64, armhf, armel, armv7, etc.)
+architecture: arm64
+
+# Description of this environment
+description: My custom ARM cross-compilation environment
+
+# Toolchain configuration
+toolchain:
+  # Toolchain type: gcc, clang, etc.
+  type: gcc
+  
+  # Cross-compilation prefix (e.g., aarch64-linux-gnu, arm-linux-gnueabihf)
+  prefix: aarch64-linux-gnu
+  
+  # Toolchain packages to install
+  packages:
+    - crossbuild-essential-arm64
+    - gcc-aarch64-linux-gnu
+    - g++-aarch64-linux-gnu
+    - libc6-dev-arm64-cross
+
+# Package categories to install
+packages:
+  # Essential build tools
+  base:
+    - build-essential
+    - cmake
+    - git
+    - wget
+    - curl
+    - ca-certificates
+  
+  # Development tools
+  dev:
+    - python3
+    - python3-pip
+    - gdb-multiarch
+  
+  # QEMU for emulation (optional)
+  qemu:
+    - qemu-user-static
+    - binfmt-support
+  
+  # Additional libraries (optional)
+  libs:
+    - libssl-dev
+    - zlib1g-dev
+  
+  # Python packages (optional)
+  python:
+    - python3-venv
+    - python3-setuptools
+
+# Environment variables
+env:
+  DEBIAN_FRONTEND: noninteractive
+  # Add your custom environment variables here
+
+# Custom installation steps (optional)
+# These commands will be executed after package installation
+custom_steps:
+  - echo "Custom environment setup complete"
+  # - wget https://example.com/custom-tool.tar.gz
+  # - tar -xzf custom-tool.tar.gz -C /opt/
+
+# Volume mounts (for documentation purposes)
+# Note: Actual mounts are specified when running the container
+volumes:
+  - /workspace
+  # - /dev:/dev

@@ -1,0 +1,41 @@
+# ARM64/AArch64 Cross-Compilation Environment Configuration
+name: aarch64-toolchain
+base_image: ubuntu:22.04
+architecture: aarch64
+description: ARM64 cross-compilation environment with gcc toolchain
+
+toolchain:
+  type: gcc
+  prefix: aarch64-linux-gnu
+  packages:
+    - crossbuild-essential-arm64
+    - gcc-aarch64-linux-gnu
+    - g++-aarch64-linux-gnu
+    - libc6-dev-arm64-cross
+    - libstdc++-11-dev-arm64-cross
+
+# Additional packages to install
+packages:
+  base:
+    - build-essential
+    - cmake
+    - git
+    - wget
+    - curl
+    - ca-certificates
+  dev:
+    - python3
+    - python3-pip
+    - gdb-multiarch
+  qemu:
+    - qemu-user-static
+    - binfmt-support
+
+# Environment variables
+env:
+  DEBIAN_FRONTEND: noninteractive
+  CROSS_COMPILE: aarch64-linux-gnu-
+
+# Custom steps (executed after package installation)
+custom_steps:
+  - echo "ARM64 toolchain installed successfully"

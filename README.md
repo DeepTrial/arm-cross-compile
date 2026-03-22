@@ -1,53 +1,143 @@
-# ARM Cross-Compilation Environment Repository
+# ARM Cross-Compilation Environment Manager
 
-This repository manages Docker images for various ARM architecture cross-compilation environments.
+A flexible, configuration-driven tool for managing ARM cross-compilation Docker environments.
 
-## Supported Architectures
+## Features
 
-| Architecture | Directory | Description |
-|-------------|-----------|-------------|
-| aarch64 | `dockerfiles/aarch64/` | ARM64 / ARMv8-A |
-| armhf | `dockerfiles/armhf/` | ARM hard-float (ARMv7+) |
-| armel | `dockerfiles/armel/` | ARM soft-float |
-| armv7 | `dockerfiles/armv7/` | ARMv7 specific |
+- **Configuration-Driven**: Define environments via YAML configuration files
+- **Auto-Generation**: Automatically generate Dockerfiles from configurations
+- **Verification**: Built-in verification of generated environments
+- **Flexible**: Support custom toolchains, packages, and build steps
+- **Extensible**: Easy to add new architectures and configurations
+
+## Quick Start
+
+### 1. List Available Configurations
+
+```bash
+./scripts/list-configs.sh
+```
+
+### 2. Build from Configuration
+
+```bash
+# Build using predefined configuration
+./scripts/build-from-config.sh configs/aarch64-toolchain.yaml
+
+# Build with custom tag
+./scripts/build-from-config.sh configs/aarch64-toolchain.yaml --tag my-image:v1.0
+```
+
+### 3. Run Container
+
+```bash
+docker run -it --rm -v $(pwd):/workspace arm-cross:aarch64-toolchain
+```
 
 ## Directory Structure
 
 ```
 .
-├── dockerfiles/       # Dockerfiles for each architecture
-│   ├── aarch64/
-│   ├── armhf/
-│   ├── armel/
-│   └── armv7/
-├── scripts/           # Build and utility scripts
-├── configs/           # Configuration files
-├── examples/          # Example projects
-└── docs/              # Documentation
+├── configs/                   # Environment configuration files (YAML)
+│   ├── aarch64-toolchain.yaml
+│   ├── armhf-toolchain.yaml
+│   └── custom-example.yaml
+├── generator/                 # Dockerfile generator and verifier
+│   ├── generate.py           # Generate Dockerfile from config
+│   └── verify.py             # Verify Dockerfile and image
+├── scripts/                   # Build and utility scripts
+│   ├── build-from-config.sh  # Main build script
+│   ├── list-configs.sh       # List available configs
+│   ├── build.sh              # Legacy script (deprecated)
+│   └── run.sh                # Run container
+├── templates/                 # Configuration templates
+│   └── config-template.yaml  # Template for new configs
+├── dockerfiles/               # Generated Dockerfiles
+│   └── generated/            # Auto-generated from configs
+└── docs/                      # Documentation
 ```
 
-## Quick Start
+## Configuration Format
 
-### Build Image
+Create a YAML configuration file:
+
+```yaml
+name: my-custom-env
+base_image: ubuntu:22.04
+architecture: aarch64
+description: My custom ARM environment
+
+toolchain:
+  type: gcc
+  prefix: aarch64-linux-gnu
+  packages:
+    - gcc-aarch64-linux-gnu
+    - g++-aarch64-linux-gnu
+
+packages:
+  base:
+    - build-essential
+    - cmake
+    - git
+  dev:
+    - python3
+    - gdb-multiarch
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  MY_VAR: my_value
+
+custom_steps:
+  - echo "Setup complete!"
+```
+
+## Commands
+
+### Generate Only
 
 ```bash
-# Build aarch64 cross-compilation environment
-cd dockerfiles/aarch64
-docker build -t arm-cross:aarch64 .
-
-# Or use the script
-./scripts/build.sh aarch64
+python3 generator/generate.py configs/aarch64-toolchain.yaml -o output/Dockerfile
 ```
 
-### Run Container
+### Validate Configuration
 
 ```bash
-# Run container
-docker run -it --rm -v $(pwd):/workspace arm-cross:aarch64
+./scripts/build-from-config.sh configs/aarch64-toolchain.yaml --validate-only
 ```
 
-## Contributing Guidelines
+### Build Without Verification
 
-1. Create a dedicated directory under `dockerfiles/` for each new architecture
-2. Dockerfiles should include clear comments
-3. Add corresponding build scripts to the `scripts/` directory
+```bash
+./scripts/build-from-config.sh configs/aarch64-toolchain.yaml --no-verify
+```
+
+### Verify Existing Dockerfile
+
+```bash
+python3 generator/verify.py dockerfiles/generated/aarch64-toolchain/Dockerfile \
+    --build -t arm-cross:aarch64-toolchain -p aarch64-linux-gnu
+```
+
+## Creating Custom Configurations
+
+1. Copy the template:
+   ```bash
+   cp templates/config-template.yaml configs/my-env.yaml
+   ```
+
+2. Edit the configuration file
+
+3. Build:
+   ```bash
+   ./scripts/build-from-config.sh configs/my-env.yaml
+   ```
+
+## Requirements
+
+- Docker
+- Python 3.6+
+- PyYAML (`pip3 install pyyaml`)
+
+## License
+
+MIT
