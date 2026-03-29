@@ -26,6 +26,9 @@ Simple tool for building ARM cross-compilation Docker environments with automati
 # Use the environment
 docker run -it --rm -v $(pwd):/workspace my-cross-env:latest
 aarch64-linux-gnu-gcc --version  # GCC 14.2.0
+
+# Run as current user (fixuid auto-maps UID/GID, no permission issues)
+docker run -it --rm -u $(id -u):$(id -g) -v $(pwd):/workspace my-cross-env:latest
 ```
 
 ## Configuration
@@ -89,8 +92,8 @@ env:
 ### Compile for ARM64
 
 ```bash
-# Start container
-docker run -it --rm -v $(pwd):/workspace debian13-arm64:latest
+# Start container (as current user to avoid file permission issues)
+docker run -it --rm -u $(id -u):$(id -g) -v $(pwd):/workspace debian13-arm64:latest
 
 # Compile C code
 aarch64-linux-gnu-gcc -o hello hello.c

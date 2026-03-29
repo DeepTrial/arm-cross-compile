@@ -189,6 +189,20 @@ class DockerfileGenerator:
             f"    ln -sf /usr/bin/aarch64-linux-gnu-g++-{gcc_pkg_ver} /usr/bin/aarch64-linux-gnu-g++",
         ])
         
+        # Add fixuid for permission handling
+        lines.extend([
+            "",
+            "# Add fixuid for runtime UID/GID mapping",
+            "RUN groupadd -r developer && \\",
+            "    useradd -r -g developer -m -d /home/developer -s /bin/bash developer && \\",
+            "    mkdir -p /etc/fixuid && \\",
+            "    printf 'user: developer\\ngroup: developer\\npaths:\\n  - /workspace\\n  - /home/developer\\n' > /etc/fixuid/config.yml && \\",
+            "    ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/;s/armv7l/arm/') && \\",
+            "    curl -fsSL https://github.com/boxboat/fixuid/releases/download/v0.6.0/fixuid-0.6.0-linux-${ARCH}.tar.gz | tar -C /usr/local/bin -xzf - && \\",
+            "    chmod 4755 /usr/local/bin/fixuid && \\",
+            "    chown -R developer:developer /workspace /home/developer",
+        ])
+        
         # Verification
         lines.extend([
             "",
@@ -199,7 +213,12 @@ class DockerfileGenerator:
             "    aarch64-linux-gnu-ld --version | head -1",
         ])
         
-        lines.extend(["", "WORKDIR /workspace", 'CMD ["/bin/bash"]'])
+        lines.extend([
+            "",
+            "WORKDIR /workspace",
+            'ENTRYPOINT ["fixuid", "-q"]',
+            'CMD ["/bin/bash"]',
+        ])
         
         return '\n'.join(lines)
     
@@ -253,6 +272,7 @@ def cmd_build(args):
         print("=" * 50)
         print(f"✓ Build complete: {tag}")
         print(f"  Run: docker run -it --rm -v $(pwd):/workspace {tag}")
+        print(f"  Run as current user: docker run -it --rm -u $(id -u):$(id -g) -v $(pwd):/workspace {tag}")
         return 0
     except subprocess.CalledProcessError:
         print("=" * 50)

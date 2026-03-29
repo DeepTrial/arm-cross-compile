@@ -200,3 +200,12 @@ Tried building GCC+glibc+binutils+gdb from source via Canadian Cross:
 ./cross-toolchain.py export my-env:latest -o ./exports
 ./cross-toolchain.py import ./exports/my-env-latest.tar.gz
 ```
+
+### Fixuid (Permission Handling)
+
+All generated images include [fixuid](https://github.com/boxboat/fixuid) to automatically map container UIDs/GIDs to the host user at runtime. This avoids file permission issues when running with `-u $(id -u):$(id -g)`.
+
+```bash
+# Run as current user — fixuid will automatically adjust permissions
+docker run -it --rm -u $(id -u):$(id -g) -v $(pwd):/workspace arm-cross:default
+```
